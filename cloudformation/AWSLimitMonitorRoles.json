@@ -1,0 +1,54 @@
+{
+   "AWSTemplateFormatVersion": "2010-09-09",
+   "Resources": {
+      "LimitCheckRole": {
+         "Type": "AWS::IAM::Role",
+         "Properties": {
+            "AssumeRolePolicyDocument": {
+               "Version" : "2012-10-17",
+               "Statement": [ {
+                  "Effect": "Allow",
+                  "Principal": {
+                     "AWS": "[ACCOUNT_ID]" 
+                  },
+                  "Action": "sts:AssumeRole" 
+               } ]
+            },
+             "RoleName": "LimitCheckRole",
+             "ManagedPolicyArns": ["arn:aws:iam::aws:policy/ReadOnlyAccess", "arn:aws:iam::aws:policy/AWSSupportAccess"],
+         }
+      },
+      "RolePolicy1": {
+         "Type": "AWS::IAM::Policy",
+         "Properties": {
+            "PolicyName": "CloudFormationDescribe",
+            "PolicyDocument": {
+               "Version" : "2012-10-17",
+               "Statement": [ {
+                  "Sid": "Stmt1455149881000",
+                  "Effect": "Allow",
+                  "Action": ["cloudformation:DescribeAccountLimits","dynamodb:DescribeLimits"],
+                  "Resource": "*"
+               } ]
+            },
+            "Roles": [ { "Ref": "LimitCheckRole" } ]
+         }
+      },
+      "RolePolicy2": {
+         "Type": "AWS::IAM::Policy",
+         "Properties": {
+            "PolicyName": "ChildLambdaPermissions",
+            "PolicyDocument": {
+               "Version" : "2012-10-17",
+               "Statement": [ {
+                  "Sid": "Stmt1455149881000",
+                  "Effect": "Allow",
+                  "Action": ["events:DeleteRule", "events:PutRule", "events:PutTargets", "events:RemoveTargets", "lambda:AddPermission", "lambda:RemovePermission"],
+                  "Resource": "*"
+               } ]
+            },
+            "Roles": [ { "Ref": "LimitCheckRole" } ]
+         }
+      },
+   }
+}
